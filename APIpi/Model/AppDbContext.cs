@@ -15,7 +15,6 @@ namespace APIpi.Model
         
         public DbSet<Facturas> Facturas { get; set; }
 
-        // Agregar clase que representa cada tabla en el folder de Model
-        // Agregar public DbSet<NombreDeLaClase> NombreDeLaTabla { get; set; } aqui por cada tabla
+        
     }
 }
