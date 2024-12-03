@@ -11,17 +11,20 @@ namespace APIpi.Controllers
     public class AgendaController : ControllerBase
     {
         private readonly ILogger<AgendaController> _logger;
-        private readonly AppDbContext _context;
+        private readonly AppDbContext contextDB;
 
+        //El contructor para las dependecias del contexto de bd y el logger
         public AgendaController(ILogger<AgendaController> logger, AppDbContext context)
         {
             _logger = logger;
-            _context = context;
+            contextDB = context;
         }
 
+        //Este endpoint funciona para crear agenda
         [HttpPost(Name = "PostAgenda")]
         public async Task<ActionResult<PostAgendaResponse>> Post(PostAgendaRequest request)
         {
+            //crea una entidad de Agenda de los datos solicitados
             var agenda = new Agenda
             {
                 ID_Evento = request.ID_Evento,
@@ -29,8 +32,8 @@ namespace APIpi.Controllers
                 Fecha_Confirmación = request.Fecha_Confirmación,
                 Estado_Reserva = request.Estado_Reserva
             };
-            _context.Agendas.Add(agenda);
-            await _context.SaveChangesAsync();
+            contextDB.Agendas.Add(agenda); //agrega la entidad 
+            await contextDB.SaveChangesAsync(); //guardo los cambios en la base de datos
 
             var response = new PostAgendaResponse
             {
@@ -40,14 +43,16 @@ namespace APIpi.Controllers
                 Fecha_Confirmación = agenda.Fecha_Confirmación,
                 Estado_Reserva = agenda.Estado_Reserva
             };
+            //Devuelve un resultado
             return CreatedAtAction(nameof(GetById), new { id = agenda.ID_Agenda }, response);
         }
 
+        //Este endpoint obtiene una agenda segun el ID
         [HttpGet("{id}")]
         public async Task<ActionResult<GetAgendaResponse>> GetById(int id)
         {
-            var agenda = await _context.Agendas.FindAsync(id);
-            if (agenda == null)
+            var agenda = await contextDB.Agendas.FindAsync(id); //Busca la ageda por ID
+            if (agenda == null) //Si no exite la agenda devuelve un error
             {
                 return NotFound();
             }
@@ -61,13 +66,15 @@ namespace APIpi.Controllers
                 Estado_Reserva = agenda.Estado_Reserva
             };
 
-            return Ok(response);
+            return Ok(response); //Devuelve la agenda encontrada
         }
 
+        //Este endpoint obtiene todas las agendas en la bd
         [HttpGet(Name = "GetAllAgendas")]
         public async Task<ActionResult<IEnumerable<Agenda>>> GetAll()
         {
-            var agendas = await _context.Agendas.Select(agenda => new GetAgendaResponse
+            //consulta todas las agendas
+            var agendas = await contextDB.Agendas.Select(agenda => new GetAgendaResponse
             {
                 ID_Agenda = agenda.ID_Agenda,
                 ID_Evento = agenda.ID_Evento,
@@ -79,22 +86,25 @@ namespace APIpi.Controllers
             return Ok(agendas);
         }
 
+        //Endpoint para actualizar una agenda
         [HttpPut("{id}")]
         public async Task<ActionResult<PutAgendaResponse>> Put(int id, PutAgendaRequest request)
         {
+            //Crea una entidad agenda con los datos actualizados
             var agendaToUpdate = new Agenda
             {
-                ID_Agenda = id,
+                ID_Agenda = id, //asegura que el id coincida
                 ID_Evento = request.ID_Evento,
                 Fecha_Reserva = request.Fecha_Reserva,
                 Fecha_Confirmación = request.Fecha_Confirmación,
                 Estado_Reserva = request.Estado_Reserva,
             };
 
-            _context.Agendas.Update(agendaToUpdate);
-            await _context.SaveChangesAsync();
+            contextDB.Agendas.Update(agendaToUpdate); //Esto marca que se a actualizado la entidad
+            await contextDB.SaveChangesAsync(); //Guarda los cambios
 
-            var updatedAgenda = await _context.Agendas.FindAsync(id);
+            //recupera la agenda que se acaba de modificar para devolverla como respuesta
+            var updatedAgenda = await contextDB.Agendas.FindAsync(id);
 
             var response = new PutAgendaResponse
             {
@@ -108,17 +118,18 @@ namespace APIpi.Controllers
             return Ok(response);
         }
 
+        //Un endpoint que se encarga de eliminar datos por ID
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var agenda = await _context.Agendas.FindAsync(id);
-            if (agenda == null)
+            var agenda = await contextDB.Agendas.FindAsync(id); //Aqui busca la agenda segun el ID ingresado
+            if (agenda == null) //Regresa un error
             {
                 return NotFound();
             }
-            _context.Agendas.Remove(agenda);
-            await _context.SaveChangesAsync();
-            return NoContent();
+            contextDB.Agendas.Remove(agenda); //Marca la agenda a eliminar
+            await contextDB.SaveChangesAsync(); //Aplica los cambios hecho en la BD
+            return NoContent(); //Devuelve un 200
         }
     }
 }
