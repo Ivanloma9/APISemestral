@@ -2,7 +2,7 @@
 {
     public enum MetodoDePago
     {
-        Crédito,
-        Débito
+        Transferencia,
+        Yappy
     }
 }
