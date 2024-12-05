@@ -7,10 +7,6 @@ namespace APIpi.Controllers.UsuarioController
 {
     public class GetUserResponse
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ID_Usuario { get; set; }
-
         [Required]
         [MaxLength(50)]
         public string Nombre { get; set; }
@@ -19,13 +15,10 @@ namespace APIpi.Controllers.UsuarioController
         [MaxLength(50)]
         public string Apellido { get; set; }
 
+        [Key]
         [Required]
         [MaxLength(100)]
         public string Correo_Electrónico { get; set; }
-
-        [Required]
-        [MaxLength(255)]
-        public string Contraseña { get; set; }
 
         [MaxLength(255)]
         public string Teléfono { get; set; }

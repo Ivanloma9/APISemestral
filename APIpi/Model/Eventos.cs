@@ -26,7 +26,7 @@ namespace APIpi.Model
 
         [Required]
         [ForeignKey("usuario")]
-        public int ID_Usuario { get; set; }
+        public string Correo_Electrónico { get; set; }
 
         [Required]
         [ForeignKey("locacion")]

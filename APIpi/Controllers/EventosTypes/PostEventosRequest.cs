@@ -22,7 +22,7 @@ namespace APIpi.Controllers.EventosTypes
         public int Número_Personas { get; set; }
 
         [Required]
-        public int ID_Usuario { get; set; }
+        public string Correo_Electrónico { get; set; }
 
         [Required]
         public int ID_Locacion { get; set; }

@@ -7,54 +7,46 @@ namespace APIpi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class EventosController : ControllerBase
+// _bdContext Objeto que interactua con la BD
+// se hace la dependecias de la BD y el logger
+    public class EventosController(ILogger<EventosController> _logger, AppDbContext _bdContext) : ControllerBase
     {
-        private readonly ILogger<EventosController> _logger; 
-        private readonly AppDbContext contextDB; //Objeto que interactua con la BD
-
-        //se hace la dependecias de la BD y el logger
-        public EventosController(ILogger<EventosController> logger, AppDbContext context)
-        {
-            _logger = logger;
-            contextDB = context;
-        }
-        
         //Un endpoint que crea un nuevo evento
         [HttpPost(Name = "PostEventos")]
         public async Task<ActionResult<PostEventosResponse>> Post(PostEventosRequest request)
         {
             //Se crea una entidad "eventos" de los datos de la solicitud
-            var eventos = new Eventos
+            var evento = new Eventos
             {
                 Tipo_Evento = request.Tipo_Evento,
                 Fecha_Evento = request.Fecha_Evento,
                 Hora_Evento = request.Hora_Evento,
                 Número_Personas = request.Número_Personas,
-                ID_Usuario = request.ID_Usuario,
+                Correo_Electrónico = request.Correo_Electrónico,
                 ID_Locacion = request.ID_Locacion
             };
-            contextDB.Eventos.Add(eventos); //agrega la entidad 
-            await contextDB.SaveChangesAsync(); //Guarda lo que se agrego a la BD
+            _bdContext.Eventos.Add(evento); //agrega la entidad 
+            await _bdContext.SaveChangesAsync(); //Guarda lo que se agrego a la BD
 
             //Crea la respuesta basada en la informacion ingresada
             var response = new PostEventosResponse
             {
-                ID_Evento = eventos.ID_Evento,
-                Tipo_Evento = eventos.Tipo_Evento,
-                Fecha_Evento = eventos.Fecha_Evento,
-                Hora_Evento = eventos.Hora_Evento,
-                Número_Personas = eventos.Número_Personas,
-                ID_Usuario = eventos.ID_Usuario,
-                ID_Locacion = eventos.ID_Locacion
+                ID_Evento = evento.ID_Evento,
+                Tipo_Evento = evento.Tipo_Evento,
+                Fecha_Evento = evento.Fecha_Evento,
+                Hora_Evento = evento.Hora_Evento,
+                Número_Personas = evento.Número_Personas,
+                Correo_Electrónico = evento.Correo_Electrónico,
+                ID_Locacion = evento.ID_Locacion
             };
-            return CreatedAtAction(nameof(GetById), new { id = eventos.ID_Evento }, response);
+            return CreatedAtAction(nameof(GetById), new { id = evento.ID_Evento }, response);
         }
-        
+
         //Endpoint que hace un consulto segun un id ingresado y trae un dato
         [HttpGet("{id}")]
         public async Task<ActionResult<GetEventoResponse>> GetById(int id)
         {
-            var eventos = await contextDB.Eventos.FindAsync(id); //Busca el evento segun el id
+            var eventos = await _bdContext.Eventos.FindAsync(id); //Busca el evento segun el id
             if (eventos == null) //Si no existe devuelve un 400
             {
                 return NotFound();
@@ -68,26 +60,26 @@ namespace APIpi.Controllers
                 Fecha_Evento = eventos.Fecha_Evento,
                 Hora_Evento = eventos.Hora_Evento,
                 Número_Personas = eventos.Número_Personas,
-                ID_Usuario = eventos.ID_Usuario,
+                Correo_Electrónico = eventos.Correo_Electrónico,
                 ID_Locacion = eventos.ID_Locacion
             };
 
             return Ok(response); //Devuelve el evento encontrado
         }
-        
+
         //Endpoint para obtener todos los eventos almacenados en la BD
         [HttpGet(Name = "GetAllEventos")]
         public async Task<ActionResult<IEnumerable<Eventos>>> GetAll()
         {
             //Consulta los eventos y los transfora a un modelo de respuesta
-            var eventos = await contextDB.Eventos.Select(evento => new GetEventoResponse
+            var eventos = await _bdContext.Eventos.Select(evento => new GetEventoResponse
             {
                 ID_Evento = evento.ID_Evento,
                 Tipo_Evento = evento.Tipo_Evento,
                 Fecha_Evento = evento.Fecha_Evento,
                 Hora_Evento = evento.Hora_Evento,
                 Número_Personas = evento.Número_Personas,
-                ID_Usuario = evento.ID_Usuario,
+                Correo_Electrónico = evento.Correo_Electrónico,
                 ID_Locacion = evento.ID_Locacion
             }).ToListAsync();
 
@@ -106,14 +98,14 @@ namespace APIpi.Controllers
                 Fecha_Evento = request.Fecha_Evento,
                 Hora_Evento = request.Hora_Evento,
                 Número_Personas = request.Número_Personas,
-                ID_Usuario = request.ID_Usuario,
+                Correo_Electrónico = request.Correo_Electrónico,
                 ID_Locacion = request.ID_Locacion,
             };
 
-            contextDB.Eventos.Update(eventoToUpdate); //Marca la entidad a cambiar
-            await contextDB.SaveChangesAsync(); //Guarda los cambios hechos
+            _bdContext.Eventos.Update(eventoToUpdate); //Marca la entidad a cambiar
+            await _bdContext.SaveChangesAsync(); //Guarda los cambios hechos
 
-            var updatedEvento = await contextDB.Eventos.FindAsync(id);
+            var updatedEvento = await _bdContext.Eventos.FindAsync(id);
 
             var response = new PutEventosResponse
             {
@@ -122,7 +114,7 @@ namespace APIpi.Controllers
                 Fecha_Evento = updatedEvento.Fecha_Evento,
                 Hora_Evento = updatedEvento.Hora_Evento,
                 Número_Personas = updatedEvento.Número_Personas,
-                ID_Usuario = updatedEvento.ID_Usuario,
+                Correo_Electrónico = updatedEvento.Correo_Electrónico,
                 ID_Locacion = updatedEvento.ID_Locacion,
             };
 
@@ -132,13 +124,14 @@ namespace APIpi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var evento = await contextDB.Eventos.FindAsync(id);
+            var evento = await _bdContext.Eventos.FindAsync(id);
             if (evento == null)
             {
                 return NotFound();
             }
-            contextDB.Eventos.Remove(evento);
-            await contextDB.SaveChangesAsync();
+
+            _bdContext.Eventos.Remove(evento);
+            await _bdContext.SaveChangesAsync();
             return NoContent();
         }
     }

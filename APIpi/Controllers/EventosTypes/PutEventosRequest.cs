@@ -22,11 +22,9 @@ namespace APIpi.Controllers.EventosTypes
         public int Número_Personas { get; set; }
 
         [Required]
-        [ForeignKey("usuario")]
-        public int ID_Usuario { get; set; }
+        public string Correo_Electrónico { get; set; }
 
         [Required]
-        [ForeignKey("locacion")]
         public int ID_Locacion { get; set; }
     }
 }

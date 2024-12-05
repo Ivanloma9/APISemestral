@@ -11,10 +11,7 @@ namespace APIpi.Model
         public DbSet<Usuario> Usuario { get; set; }
         public DbSet<Eventos> Eventos { get; set; }
         public DbSet<Agenda> Agendas { get; set; }
-        public DbSet<DetallesServicios> Detalles_Servicios { get; set; }   
-        
+        public DbSet<DetallesServicios> Detalles_Servicios { get; set; }
         public DbSet<Facturas> Facturas { get; set; }
-
-        
     }
 }

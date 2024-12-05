@@ -41,44 +41,41 @@ namespace APIpi.Controllers
             // Prepara la respuesta
             var response = new PostUserResponse
             {
-                ID_Usuario = usuario.ID_Usuario,
                 Nombre = usuario.Nombre,
                 Apellido = usuario.Apellido,
                 Correo_Electrónico = usuario.Correo_Electrónico,
-                Contraseña = usuario.Contraseña,
                 Teléfono = usuario.Teléfono,
                 Dirección = usuario.Dirección,
                 Tipo = usuario.Tipo
             };
-
+            Console.WriteLine("Aqui");
             // Devuelve una respuesta 201 Created con la ubicación del nuevo recurso
-            return CreatedAtAction(nameof(GetById), new { id = usuario.ID_Usuario }, usuario);
+            return CreatedAtAction(nameof(GetByCorreo), new { correoElectronico = usuario.Correo_Electrónico }, response);
         }
 
-        [HttpGet("{id}")] // Maneja las solicitudes HTTP GET con un parámetro id
-        public async Task<ActionResult<Usuario>> GetById(int id)
+        [HttpGet("{correoElectronico}")] // Maneja las solicitudes HTTP GET con un parámetro id
+        public async Task<ActionResult<GetUserResponse>> GetByCorreo(string correoElectronico)
         {
             // Registra información sobre la búsqueda del usuario
-            _logger.LogInformation($"Fetching user with id [{id}] from the data base...");
+            _logger.LogInformation(
+                $"Buscando usuario con correo electronico [{correoElectronico}] en la base de datos...");
             // Busca el usuario en la base de datos por ID
-            var usuario = await contextDB.Usuario.FindAsync(id);
+            var usuario = await contextDB.Usuario.FindAsync(correoElectronico);
             if (usuario == null)
             {
                 // Si no se encuentra el usuario, registra una advertencia y devuelve 404 NotFound
-                _logger.LogWarning($"User with id [{id}] was not found");
+                _logger.LogWarning($"No se econtro un usuario con el correo electronico [{correoElectronico}]");
                 return NotFound();
             }
 
             // Registra información sobre el usuario encontrado
-            _logger.LogInformation($"Found user with id [{id}]");
+            _logger.LogInformation($"Se econtro un usuario con el correo electronico [{correoElectronico}]");
             // Prepara la respuesta
-            var response = new Usuario
+            var response = new GetUserResponse
             {
-                ID_Usuario = usuario.ID_Usuario,
                 Nombre = usuario.Nombre,
                 Apellido = usuario.Apellido,
                 Correo_Electrónico = usuario.Correo_Electrónico,
-                Contraseña = usuario.Contraseña,
                 Teléfono = usuario.Teléfono,
                 Dirección = usuario.Dirección,
                 Tipo = usuario.Tipo
@@ -89,18 +86,16 @@ namespace APIpi.Controllers
         }
 
         [HttpGet(Name = "GetAllUsers")] // Maneja las solicitudes HTTP GET para obtener todos los usuarios
-        public async Task<ActionResult<IEnumerable<Usuario>>> GetAll()
+        public async Task<ActionResult<IEnumerable<GetUserResponse>>> GetAll()
         {
             // Obtiene todos los usuarios de la base de datos
             var usuarios = await contextDB.Usuario.ToListAsync();
             // Prepara la respuesta
             var response = usuarios.Select(usuario => new GetUserResponse
             {
-                ID_Usuario = usuario.ID_Usuario,
                 Nombre = usuario.Nombre,
                 Apellido = usuario.Apellido,
                 Correo_Electrónico = usuario.Correo_Electrónico,
-                Contraseña = usuario.Contraseña,
                 Teléfono = usuario.Teléfono,
                 Dirección = usuario.Dirección,
                 Tipo = usuario.Tipo
@@ -110,41 +105,50 @@ namespace APIpi.Controllers
             return Ok(response);
         }
 
-        [HttpPut("{id}")] // Maneja las solicitudes HTTP PUT con un parámetro id
-        public async Task<ActionResult<PutUserResponse>> Put(int id, PutUserRequest request)
+        [HttpPut("{correoElectronico}")] // Maneja las solicitudes HTTP PUT con un parámetro id
+        public async Task<ActionResult<PutUserResponse>> Put(string correoElectronico, PutUserRequest request)
         {
             // Crea un nuevo objeto Usuario con los datos proporcionados
-            var usuarioToUpdate = new Usuario
+            var usuarioActualizado = new Usuario
             {
-                ID_Usuario = id,
                 Nombre = request.Nombre,
                 Apellido = request.Apellido,
-                Correo_Electrónico = request.Correo_Electrónico,
-                Contraseña = request.Contraseña,
+                Correo_Electrónico = correoElectronico,
                 Teléfono = request.Teléfono,
                 Dirección = request.Dirección,
                 Tipo = request.Tipo
             };
 
             // Actualiza el usuario en el contexto
-            contextDB.Usuario.Update(usuarioToUpdate);
+            contextDB.Usuario.Update(usuarioActualizado);
             // Guarda los cambios en la base de datos
             await contextDB.SaveChangesAsync();
 
+            var response = new PutUserResponse
+            {
+                Nombre = usuarioActualizado.Nombre,
+                Apellido = usuarioActualizado.Apellido,
+                Correo_Electrónico = usuarioActualizado.Correo_Electrónico,
+                Teléfono = usuarioActualizado.Teléfono,
+                Dirección = usuarioActualizado.Dirección,
+                Tipo = usuarioActualizado.Tipo
+            };
+
             // Devuelve la respuesta 200 OK con el usuario actualizado
-            return Ok(await contextDB.Usuario.FindAsync(id));
+            return Ok(response);
         }
 
-        [HttpDelete("{id}")] // Maneja las solicitudes HTTP DELETE con un parámetro id
-        public async Task<IActionResult> Delete(int id)
+        [HttpDelete("{correoElectronico}")] // Maneja las solicitudes HTTP DELETE con un parámetro id
+        public async Task<IActionResult> Delete(string correoElectronico)
         {
             // Busca el usuario en la base de datos por ID
-            var usuario = await contextDB.Usuario.FindAsync(id);
+            var usuario = await contextDB.Usuario.FindAsync(correoElectronico);
             if (usuario == null)
             {
                 // Si no se encuentra el usuario, devuelve 404 NotFound
                 return NotFound();
             }
+
             // Elimina el usuario del contexto
             contextDB.Usuario.Remove(usuario);
             // Guarda los cambios en la base de datos

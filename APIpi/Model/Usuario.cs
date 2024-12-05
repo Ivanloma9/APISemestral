@@ -6,10 +6,6 @@ namespace APIpi.Model
 {
     public class Usuario
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ID_Usuario { get; set; }
-
         [Required]
         [MaxLength(50)]
         public string Nombre { get; set; }
@@ -18,6 +14,7 @@ namespace APIpi.Model
         [MaxLength(50)]
         public string Apellido { get; set; }
 
+        [Key]
         [Required]
         [MaxLength(100)]
         public string Correo_Electrónico { get; set; }
