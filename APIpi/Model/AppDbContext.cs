@@ -13,5 +13,6 @@ namespace APIpi.Model
         public DbSet<Agenda> Agendas { get; set; }
         public DbSet<DetallesServicios> Detalles_Servicios { get; set; }
         public DbSet<Facturas> Facturas { get; set; }
+        public DbSet<Bitacora> Bitacora { get; set; }
     }
 }

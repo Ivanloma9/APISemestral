@@ -7,17 +7,12 @@ namespace APIpi.Controllers
 {
     [ApiController] // Indica que esta clase es un controlador de API
     [Route("[controller]")] // Define la ruta del controlador
-    public class UserController : ControllerBase
+    public class UserController(ILogger<UserController> logger, AppDbContext context) : ControllerBase
     {
-        private readonly ILogger<UserController> _logger; // Logger para registrar información y errores
-        private readonly AppDbContext contextDB; // Contexto de base de datos
+        // Logger para registrar información y errores
+        // Contexto de base de datos
 
         // Constructor que inicializa el logger y el contexto de base de datos
-        public UserController(ILogger<UserController> logger, AppDbContext context)
-        {
-            _logger = logger;
-            contextDB = context;
-        }
 
         [HttpPost(Name = "PostUser")] // Maneja las solicitudes HTTP POST
         public async Task<ActionResult<PostUserResponse>> Post(PostUserRequest request)
@@ -34,9 +29,9 @@ namespace APIpi.Controllers
                 Tipo = request.Tipo
             };
             // Agrega el nuevo usuario al contexto
-            contextDB.Usuario.Add(usuario);
+            context.Usuario.Add(usuario);
             // Guarda los cambios en la base de datos
-            await contextDB.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             // Prepara la respuesta
             var response = new PostUserResponse
@@ -48,7 +43,7 @@ namespace APIpi.Controllers
                 Dirección = usuario.Dirección,
                 Tipo = usuario.Tipo
             };
-            Console.WriteLine("Aqui");
+
             // Devuelve una respuesta 201 Created con la ubicación del nuevo recurso
             return CreatedAtAction(nameof(GetByCorreo), new { correoElectronico = usuario.Correo_Electrónico }, response);
         }
@@ -57,19 +52,19 @@ namespace APIpi.Controllers
         public async Task<ActionResult<GetUserResponse>> GetByCorreo(string correoElectronico)
         {
             // Registra información sobre la búsqueda del usuario
-            _logger.LogInformation(
+            logger.LogInformation(
                 $"Buscando usuario con correo electronico [{correoElectronico}] en la base de datos...");
             // Busca el usuario en la base de datos por ID
-            var usuario = await contextDB.Usuario.FindAsync(correoElectronico);
+            var usuario = await context.Usuario.FindAsync(correoElectronico);
             if (usuario == null)
             {
                 // Si no se encuentra el usuario, registra una advertencia y devuelve 404 NotFound
-                _logger.LogWarning($"No se econtro un usuario con el correo electronico [{correoElectronico}]");
+                logger.LogWarning($"No se econtro un usuario con el correo electronico [{correoElectronico}]");
                 return NotFound();
             }
 
             // Registra información sobre el usuario encontrado
-            _logger.LogInformation($"Se econtro un usuario con el correo electronico [{correoElectronico}]");
+            logger.LogInformation($"Se econtro un usuario con el correo electronico [{correoElectronico}]");
             // Prepara la respuesta
             var response = new GetUserResponse
             {
@@ -89,7 +84,7 @@ namespace APIpi.Controllers
         public async Task<ActionResult<IEnumerable<GetUserResponse>>> GetAll()
         {
             // Obtiene todos los usuarios de la base de datos
-            var usuarios = await contextDB.Usuario.ToListAsync();
+            var usuarios = await context.Usuario.ToListAsync();
             // Prepara la respuesta
             var response = usuarios.Select(usuario => new GetUserResponse
             {
@@ -109,14 +104,14 @@ namespace APIpi.Controllers
         public async Task<ActionResult<PutUserResponse>> Put(string correoElectronico, PutUserRequest request)
         {
             // Registra información sobre la búsqueda del usuario
-            _logger.LogInformation(
+            logger.LogInformation(
                 $"Buscando usuario con correo electronico [{correoElectronico}] en la base de datos...");
             // Busca el usuario en la base de datos por ID
-            var usuario = await contextDB.Usuario.FindAsync(correoElectronico);
+            var usuario = await context.Usuario.FindAsync(correoElectronico);
             if (usuario == null)
             {
                 // Si no se encuentra el usuario, registra una advertencia y devuelve 404 NotFound
-                _logger.LogWarning($"No se econtro un usuario con el correo electronico [{correoElectronico}]");
+                logger.LogWarning($"No se econtro un usuario con el correo electronico [{correoElectronico}]");
                 return NotFound();
             }
 
@@ -130,9 +125,9 @@ namespace APIpi.Controllers
             usuario.Tipo = request.Tipo;
 
             // Actualiza el usuario en el contexto
-            contextDB.Usuario.Update(usuario);
+            context.Usuario.Update(usuario);
             // Guarda los cambios en la base de datos
-            await contextDB.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             var response = new PutUserResponse
             {
@@ -152,7 +147,7 @@ namespace APIpi.Controllers
         public async Task<IActionResult> Delete(string correoElectronico)
         {
             // Busca el usuario en la base de datos por ID
-            var usuario = await contextDB.Usuario.FindAsync(correoElectronico);
+            var usuario = await context.Usuario.FindAsync(correoElectronico);
             if (usuario == null)
             {
                 // Si no se encuentra el usuario, devuelve 404 NotFound
@@ -160,9 +155,9 @@ namespace APIpi.Controllers
             }
 
             // Elimina el usuario del contexto
-            contextDB.Usuario.Remove(usuario);
+            context.Usuario.Remove(usuario);
             // Guarda los cambios en la base de datos
-            await contextDB.SaveChangesAsync();
+            await context.SaveChangesAsync();
             // Devuelve una respuesta 204 No Content
             return NoContent();
         }
