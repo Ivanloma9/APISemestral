@@ -12,6 +12,5 @@ namespace APIpi.Controllers
         // top locaciones
         // ingresos mensuales
         // proximos eventos
-        // bitacora
     }
 }

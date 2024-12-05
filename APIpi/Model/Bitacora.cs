@@ -5,7 +5,6 @@ namespace APIpi.Model;
 
 public class Bitacora
 {
-    [Key]
     [Required]
     [MaxLength(36)]
     public string Sesion { get; set; }
