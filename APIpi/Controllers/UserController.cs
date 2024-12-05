@@ -108,30 +108,40 @@ namespace APIpi.Controllers
         [HttpPut("{correoElectronico}")] // Maneja las solicitudes HTTP PUT con un parámetro id
         public async Task<ActionResult<PutUserResponse>> Put(string correoElectronico, PutUserRequest request)
         {
-            // Crea un nuevo objeto Usuario con los datos proporcionados
-            var usuarioActualizado = new Usuario
+            // Registra información sobre la búsqueda del usuario
+            _logger.LogInformation(
+                $"Buscando usuario con correo electronico [{correoElectronico}] en la base de datos...");
+            // Busca el usuario en la base de datos por ID
+            var usuario = await contextDB.Usuario.FindAsync(correoElectronico);
+            if (usuario == null)
             {
-                Nombre = request.Nombre,
-                Apellido = request.Apellido,
-                Correo_Electrónico = correoElectronico,
-                Teléfono = request.Teléfono,
-                Dirección = request.Dirección,
-                Tipo = request.Tipo
-            };
+                // Si no se encuentra el usuario, registra una advertencia y devuelve 404 NotFound
+                _logger.LogWarning($"No se econtro un usuario con el correo electronico [{correoElectronico}]");
+                return NotFound();
+            }
+
+            // Crea un nuevo objeto Usuario con los datos proporcionados
+            usuario.Nombre = request.Nombre;
+            usuario.Apellido = request.Apellido;
+            usuario.Correo_Electrónico = request.Correo_Electrónico;
+            usuario.Contraseña = request.Contraseña;
+            usuario.Teléfono = request.Teléfono;
+            usuario.Dirección = request.Dirección;
+            usuario.Tipo = request.Tipo;
 
             // Actualiza el usuario en el contexto
-            contextDB.Usuario.Update(usuarioActualizado);
+            contextDB.Usuario.Update(usuario);
             // Guarda los cambios en la base de datos
             await contextDB.SaveChangesAsync();
 
             var response = new PutUserResponse
             {
-                Nombre = usuarioActualizado.Nombre,
-                Apellido = usuarioActualizado.Apellido,
-                Correo_Electrónico = usuarioActualizado.Correo_Electrónico,
-                Teléfono = usuarioActualizado.Teléfono,
-                Dirección = usuarioActualizado.Dirección,
-                Tipo = usuarioActualizado.Tipo
+                Nombre = usuario.Nombre,
+                Apellido = usuario.Apellido,
+                Correo_Electrónico = usuario.Correo_Electrónico,
+                Teléfono = usuario.Teléfono,
+                Dirección = usuario.Dirección,
+                Tipo = usuario.Tipo
             };
 
             // Devuelve la respuesta 200 OK con el usuario actualizado

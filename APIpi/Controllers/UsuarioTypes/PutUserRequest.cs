@@ -14,6 +14,11 @@ namespace APIpi.Controllers.UsuarioController
         [Required]
         [MaxLength(50)]
         public string Apellido { get; set; }
+        
+        [Key]
+        [Required]
+        [MaxLength(100)]
+        public string Correo_Electrónico { get; set; }
 
         [Required]
         [MaxLength(255)]
